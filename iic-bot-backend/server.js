@@ -9,11 +9,29 @@ const { ChatGroq } = require('@langchain/groq');
 const { PromptTemplate } = require('@langchain/core/prompts');
 const { StringOutputParser } = require('@langchain/core/output_parsers');
 const { RunnableSequence } = require('@langchain/core/runnables');
+const { Document } = require("@langchain/core/documents");
 
 const app = express();
 app.use(express.json());
+
+// CORS configuration for production and development
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    process.env.FRONTEND_URL // Add your Vercel URL here
+].filter(Boolean);
+
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: function (origin, callback) {
+        // Allow requests with no origin (mobile apps, Postman, etc.)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true
 }));
 
@@ -33,7 +51,7 @@ const model = new ChatGroq({
     apiKey: process.env.GROQ_API_KEY,
     model: "llama-3.1-8b-instant",
     temperature: 0.1,
-    maxTokens: 1500,
+    maxTokens: 500, // Reduced to enforce concise responses
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -41,11 +59,8 @@ const model = new ChatGroq({
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const users = {
-    admin: { password: "admin123", role: "Administrator", name: "Admin User", permissions: ["analytics", "all-sops"] },
-    president: { password: "president123", role: "Student President", name: "Student President", permissions: ["president-sops", "analytics"] },
-    vp: { password: "vp123", role: "Vice President", name: "Vice President", permissions: ["vp-sops"] },
-    head: { password: "head123", role: "Team Head", name: "Team Head", permissions: ["head-sops"] },
-    member: { password: "member123", role: "Member", name: "IIC Member", permissions: ["member-sops"] },
+    admin: { password: "admin123", role: "Administrator", name: "Admin", permissions: ["analytics", "all-sops", "teach-bot"] },
+    user: { password: "user123", role: "Club Member", name: "IIC Member", permissions: ["member-sops"] },
 };
 
 const analytics = {
@@ -58,26 +73,26 @@ const analytics = {
 // PROMPT TEMPLATE
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const COMPLIANCE_PROMPT = `You are the **Strict Compliance Officer** for IIC (Institution's Innovation Council).
+const COMPLIANCE_PROMPT = `You are the IIC Operations Enforcer. You are strict, concise, and direct.
 
-CRITICAL RULES:
-- Answer ONLY based on the SOP context provided below. Do NOT provide general advice.
-- If a rule was violated, state the **exact rule** and the **penalty** in bold.
-- Always identify the **specific role** responsible (e.g., Student President, Technical Head).
-- If the answer is not in the context, respond: "⚠️ I cannot find a specific rule for this in the SOPs."
-- Be professional, authoritative, and concise.
-- Format your response with clear structure using bullet points or numbered lists.
-- Use markdown formatting: **bold** for important terms, numbered lists for steps.
+CHAT HISTORY:
+{chat_history}
 
-═══════════════════════════════════════
-📋 SOP CONTEXT:
+CONTEXT FROM SOPs:
 {context}
-═══════════════════════════════════════
 
-❓ USER QUESTION: 
+USER QUESTION: 
 {question}
 
-📝 YOUR VERDICT:`;
+INSTRUCTIONS:
+1. Use History: Reference the CHAT HISTORY to understand pronouns ("he", "it", "they") and follow-up questions.
+2. Be Concise: Answer in fewer than 150 words. No essays.
+3. Summarize: Do not copy-paste long paragraphs from SOPs. Summarize the key point.
+4. Structure: Use bullet points for lists (max 5 items).
+5. Directness: If asked "Who is responsible?", start with the Role Name immediately.
+6. Unknown: If not in context, say "I don't have information about this in the SOPs."
+
+YOUR RESPONSE:`;
 
 const promptTemplate = PromptTemplate.fromTemplate(COMPLIANCE_PROMPT);
 
@@ -200,11 +215,67 @@ app.post('/chat', async (req, res) => {
     const startTime = Date.now();
 
     try {
-        const { question, userRole } = req.body;
+        const { question, userRole, history } = req.body;
 
         if (!question || typeof question !== 'string' || question.trim().length === 0) {
             return res.status(400).json({ error: "Question is required" });
         }
+
+        // ═══════════════════════════════════════════════════════════════
+        // CHECK FOR LEARNING COMMAND
+        // ═══════════════════════════════════════════════════════════════
+        if (question.startsWith("/learn ")) {
+            const newFact = question.replace("/learn ", "").trim();
+
+            if (!newFact) {
+                return res.status(400).json({ error: "Please provide information to learn after /learn" });
+            }
+
+            console.log(`🧠 Learning new fact: "${newFact}"`);
+
+            try {
+                // 1. Create a Document from the text
+                const doc = new Document({
+                    pageContent: newFact,
+                    metadata: {
+                        source: "User_taught_memory.txt",
+                        timestamp: new Date().toISOString(),
+                        userRole: userRole || "guest"
+                    }
+                });
+
+                // 2. Upload to Pinecone immediately
+                await PineconeStore.fromDocuments(
+                    [doc],
+                    embeddings,
+                    {
+                        pineconeIndex,
+                        maxConcurrency: 5,
+                    }
+                );
+
+                console.log(`✅ New fact stored in vector database`);
+
+                return res.json({
+                    answer: "✅ **Memory Updated!** I have processed and stored this new information in my knowledge base. You can now ask me about it.",
+                    sources: ["User Input"],
+                    followUps: [
+                        "What did you just learn?",
+                        "Can you explain that to me?",
+                        "What else should you know?"
+                    ],
+                    responseTime: Date.now() - startTime
+                });
+
+            } catch (learnError) {
+                console.error("❌ Learning error:", learnError.message);
+                return res.status(500).json({
+                    error: "Failed to store new information",
+                    details: process.env.NODE_ENV === 'development' ? learnError.message : undefined
+                });
+            }
+        }
+        // ═══════════════════════════════════════════════════════════════
 
         console.log(`\n📨 Question: "${question.substring(0, 50)}..." | Role: ${userRole || "guest"}`);
 
@@ -215,9 +286,12 @@ app.post('/chat', async (req, res) => {
         const context = results.map(r => r.pageContent).join('\n\n');
         const sources = extractSources(results);
 
-        // Generate response
+        // Format chat history (keep last 6 messages for context)
+        const chatHistory = history || "No previous conversation.";
+
+        // Generate response with history
         const chain = RunnableSequence.from([promptTemplate, model, new StringOutputParser()]);
-        const answer = await chain.invoke({ context, question });
+        const answer = await chain.invoke({ context, question, chat_history: chatHistory });
 
         // Generate follow-up questions
         const followUps = generateFollowUps(question, context);
@@ -258,12 +332,55 @@ app.post('/chat/stream', async (req, res) => {
     res.flushHeaders();
 
     try {
-        const { question, userRole } = req.body;
+        const { question, userRole, history } = req.body;
 
         if (!question || typeof question !== 'string' || question.trim().length === 0) {
             res.write(`data: ${JSON.stringify({ type: 'error', message: 'Question is required' })}\n\n`);
             return res.end();
         }
+
+        // ═══════════════════════════════════════════════════════════════
+        // CHECK FOR LEARNING COMMAND
+        // ═══════════════════════════════════════════════════════════════
+        if (question.startsWith("/learn ")) {
+            const newFact = question.replace("/learn ", "").trim();
+
+            if (!newFact) {
+                res.write(`data: ${JSON.stringify({ type: 'error', message: 'Please provide information to learn after /learn' })}\n\n`);
+                return res.end();
+            }
+
+            console.log(`🧠 Learning new fact (stream): "${newFact}"`);
+
+            try {
+                const doc = new Document({
+                    pageContent: newFact,
+                    metadata: {
+                        source: "User_taught_memory.txt",
+                        timestamp: new Date().toISOString(),
+                        userRole: userRole || "guest"
+                    }
+                });
+
+                await PineconeStore.fromDocuments([doc], embeddings, {
+                    pineconeIndex,
+                    maxConcurrency: 5
+                });
+
+                res.write(`data: ${JSON.stringify({ type: 'content', content: '✅ **Memory Updated!** I have processed and stored this new information in my knowledge base. You can now ask me about it.' })}\n\n`);
+                res.write(`data: ${JSON.stringify({ type: 'sources', sources: ['User Input'] })}\n\n`);
+                res.write(`data: ${JSON.stringify({ type: 'followUps', followUps: ['What did you just learn?', 'Can you explain that to me?', 'What else should you know?'] })}\n\n`);
+                res.write(`data: ${JSON.stringify({ type: 'done', responseTime: Date.now() - startTime })}\n\n`);
+
+                console.log(`✅ New fact stored in vector database (stream)`);
+            } catch (learnError) {
+                console.error("❌ Learning error (stream):", learnError.message);
+                res.write(`data: ${JSON.stringify({ type: 'error', message: 'Failed to store new information' })}\n\n`);
+            }
+
+            return res.end();
+        }
+        // ═══════════════════════════════════════════════════════════════
 
         console.log(`\n🔄 Streaming: "${question.substring(0, 50)}..." | Role: ${userRole || "guest"}`);
 
@@ -274,12 +391,15 @@ app.post('/chat/stream', async (req, res) => {
         const context = results.map(r => r.pageContent).join('\n\n');
         const sources = extractSources(results);
 
+        // Format chat history (keep last 6 messages for context)
+        const chatHistory = history || "No previous conversation.";
+
         // Send sources first
         res.write(`data: ${JSON.stringify({ type: 'sources', sources })}\n\n`);
 
-        // Generate and stream response
+        // Generate and stream response with history
         const chain = RunnableSequence.from([promptTemplate, model, new StringOutputParser()]);
-        const stream = await chain.stream({ context, question });
+        const stream = await chain.stream({ context, question, chat_history: chatHistory });
 
         let fullContent = '';
         for await (const chunk of stream) {

@@ -9,7 +9,14 @@
     "ingest": "node ingest.js",
     "test": "echo \"No tests specified\" && exit 0"
   },
-  "keywords": ["iic", "chatbot", "langchain", "pinecone", "compliance", "sop"],
+  "keywords": [
+    "iic",
+    "chatbot",
+    "langchain",
+    "pinecone",
+    "compliance",
+    "sop"
+  ],
   "author": "IIC Team",
   "license": "MIT",
   "type": "commonjs",
