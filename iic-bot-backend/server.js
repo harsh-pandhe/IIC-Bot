@@ -25,7 +25,7 @@ app.use(cors({
     origin: function (origin, callback) {
         // Allow requests with no origin (mobile apps, Postman, etc.)
         if (!origin) return callback(null, true);
-        
+
         if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
             callback(null, true);
         } else {
