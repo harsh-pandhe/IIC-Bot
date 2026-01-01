@@ -1,15 +1,21 @@
 {
   "name": "iic-bot-backend",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "2.0.0",
+  "description": "IIC Compliance Bot Backend - AI-powered SOP assistant using LangChain and Pinecone",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "ingest": "node ingest.js",
+    "test": "echo \"No tests specified\" && exit 0"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["iic", "chatbot", "langchain", "pinecone", "compliance", "sop"],
+  "author": "IIC Team",
+  "license": "MIT",
   "type": "commonjs",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "@huggingface/inference": "^4.13.5",
     "@langchain/community": "^1.1.1",
