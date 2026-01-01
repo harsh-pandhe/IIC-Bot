@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd iic-bot-frontend && npm run build",
+  "devCommand": "cd iic-bot-frontend && npm run dev",
+  "installCommand": "cd iic-bot-frontend && npm install",
+  "outputDirectory": "iic-bot-frontend/.next"
+}
