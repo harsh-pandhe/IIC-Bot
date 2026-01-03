@@ -197,7 +197,7 @@ function LoginModal({
           </div>
         )}
 
-        <div className="space-y-3">
+        <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-3">
           <input
             className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all"
             placeholder="Username"
@@ -213,7 +213,7 @@ function LoginModal({
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
           />
-        </div>
+        </form>
 
         <div className="flex gap-3 mt-6">
           <button
