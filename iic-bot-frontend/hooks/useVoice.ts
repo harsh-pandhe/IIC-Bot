@@ -14,7 +14,7 @@ interface UseVoiceReturn {
 export const useVoice = (): UseVoiceReturn => {
     const [isListening, setIsListening] = useState(false);
     const [isSpeaking, setIsSpeaking] = useState(false);
-    const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
+    const [recognition, setRecognition] = useState<any>(null);
 
     const supported = typeof window !== 'undefined' &&
         ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) &&
