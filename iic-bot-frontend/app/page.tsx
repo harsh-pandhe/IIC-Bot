@@ -201,6 +201,7 @@ function LoginModal({
           <input
             className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all"
             placeholder="Username"
+            autoComplete="username"
             value={form.username}
             onChange={(e) => setForm({ ...form, username: e.target.value })}
             onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
@@ -209,6 +210,7 @@ function LoginModal({
             className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all"
             type="password"
             placeholder="Password"
+            autoComplete="current-password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
