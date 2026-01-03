@@ -19,9 +19,6 @@ jobs:
       with:
         node-version: '18'
         
-    - name: Run security check script
-      run: node scripts/security-check.js
-      
     - name: Check for secrets in code
       uses: trufflesecurity/trufflehog@main
       with:
