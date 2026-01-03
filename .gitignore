@@ -75,3 +75,7 @@ secrets.json
 *.sql
 *.sqlite
 *.db
+
+# Password change logs (never commit!)
+password-change-log.txt
+new-credentials.txt
