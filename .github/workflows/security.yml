@@ -29,8 +29,8 @@ jobs:
     - name: Scan for vulnerabilities
       run: |
         cd iic-bot-backend
-        npm install
+        npm install --legacy-peer-deps
         npm audit --audit-level=moderate || true
         cd ../iic-bot-frontend
-        npm install
+        npm install --legacy-peer-deps
         npm audit --audit-level=moderate || true
