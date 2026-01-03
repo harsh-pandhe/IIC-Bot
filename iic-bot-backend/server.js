@@ -47,6 +47,10 @@ const { notFound, errorHandler, asyncHandler } = require('./middleware/errorHand
 validateEnvironment();
 
 const app = express();
+
+// Trust proxy for rate limiting on Render and similar platforms
+app.set('trust proxy', 1);
+
 app.use(express.json({ limit: '10mb' }));
 
 // ═══════════════════════════════════════════════════════════════════════════════
