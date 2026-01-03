@@ -529,7 +529,10 @@ export default function Home() {
     try {
       const response = await fetch(`${API_URL}/chat/stream`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('auth_token') || ''}`
+        },
         body: JSON.stringify({
           question,
           userRole: user?.role,
