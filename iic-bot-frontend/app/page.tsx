@@ -402,7 +402,18 @@ export default function Home() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Load saved data on mount
+  // Load saved theme preference on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("iic-theme");
+    if (savedTheme) {
+      setDarkMode(savedTheme === "dark");
+    }
+  }, []);
+
+  // Persist theme preference when it changes
+  useEffect(() => {
+    localStorage.setItem("iic-theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
   useEffect(() => {
     const savedMessages = localStorage.getItem("iic-chat-history");
     const savedUser = localStorage.getItem("iic-user");
@@ -656,16 +667,34 @@ export default function Home() {
   const canViewAnalytics = user?.role === "Administrator" || user?.permissions?.includes("analytics");
 
   return (
-    <div className="min-h-screen bg-[#0a0f1a] flex flex-col">
+    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${
+      darkMode 
+        ? "bg-[#0a0f1a] text-white" 
+        : "bg-white text-slate-900"
+    }`}>
       {/* Animated Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-full blur-3xl" />
+        {darkMode ? (
+          <>
+            <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-full blur-3xl" />
+          </>
+        ) : (
+          <>
+            <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-400/5 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-400/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-blue-400/3 to-purple-400/3 rounded-full blur-3xl" />
+          </>
+        )}
       </div>
 
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 w-full py-3 sm:py-4 px-3 sm:px-4 border-b border-slate-800/50 bg-[#0d1321]/95 backdrop-blur-xl shadow-lg">
+      <header className={`fixed top-0 left-0 right-0 z-50 w-full py-3 sm:py-4 px-3 sm:px-4 border-b transition-colors duration-300 ${
+        darkMode
+          ? "border-slate-800/50 bg-[#0d1321]/95 backdrop-blur-xl shadow-lg"
+          : "border-slate-200 bg-white/95 backdrop-blur-xl shadow-sm"
+      }`}>
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-4">
             <div className="relative group">
@@ -764,8 +793,12 @@ export default function Home() {
       )}
 
       {/* Chat Container */}
-      <main className="relative flex-1 overflow-hidden flex flex-col max-w-4xl w-full mx-auto pt-16 sm:pt-20">
-        <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6 scrollbar-thin">
+      <main className={`relative flex-1 overflow-hidden flex flex-col max-w-4xl w-full mx-auto pt-16 sm:pt-20 transition-colors duration-300 ${
+        darkMode ? "bg-[#0a0f1a]" : "bg-slate-50"
+      }`}>
+        <div className={`flex-1 overflow-y-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6 scrollbar-thin ${
+          darkMode ? "scrollbar-track-slate-900 scrollbar-thumb-slate-700" : "scrollbar-track-slate-100 scrollbar-thumb-slate-300"
+        }`}>
           {/* Login Required State */}
           {!user && (
             <div className="flex flex-col items-center justify-center h-full text-center py-8 sm:py-16 px-4 animate-fadeIn">
@@ -853,9 +886,11 @@ export default function Home() {
 
                 {/* Message Content */}
                 <div
-                  className={`rounded-xl sm:rounded-2xl overflow-hidden ${msg.role === "user"
+                  className={`rounded-xl sm:rounded-2xl overflow-hidden transition-colors duration-300 ${msg.role === "user"
                     ? "px-3 py-2.5 sm:px-5 sm:py-4 bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-tr-sm shadow-lg shadow-blue-500/20"
-                    : "bg-[#151c2c] text-slate-200 border border-slate-700/50 rounded-tl-sm shadow-lg"
+                    : darkMode
+                    ? "bg-[#151c2c] text-slate-200 border border-slate-700/50 rounded-tl-sm shadow-lg"
+                    : "bg-white text-slate-900 border border-slate-200 rounded-tl-sm shadow-sm"
                     }`}
                 >
                   {msg.role === "user" ? (
@@ -868,7 +903,11 @@ export default function Home() {
 
                       {/* Sources */}
                       {msg.sources && msg.sources.length > 0 && (
-                        <div className="px-3 py-2.5 sm:px-5 sm:py-3 border-t border-slate-700/50 bg-slate-800/30">
+                        <div className={`px-3 py-2.5 sm:px-5 sm:py-3 border-t transition-colors duration-300 ${
+                          darkMode
+                            ? "border-slate-700/50 bg-slate-800/30"
+                            : "border-slate-200 bg-slate-50"
+                        }`}>
                           <p className="text-xs text-slate-500 mb-2 flex items-center gap-1.5">
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -966,7 +1005,11 @@ export default function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
                 </div>
-                <div className="px-3 py-3 sm:px-5 sm:py-4 rounded-xl sm:rounded-2xl rounded-tl-sm bg-[#151c2c] border border-slate-700/50 shadow-lg">
+                <div className={`px-3 py-3 sm:px-5 sm:py-4 rounded-xl sm:rounded-2xl rounded-tl-sm transition-colors duration-300 ${
+                  darkMode
+                    ? "bg-[#151c2c] border border-slate-700/50 shadow-lg"
+                    : "bg-slate-100 border border-slate-300 shadow-sm"
+                }`}>
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" />
                     <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -982,7 +1025,11 @@ export default function Home() {
         </div>
 
         {/* Input Area */}
-        <div className="relative p-3 sm:p-4 border-t border-slate-800/50 bg-[#0d1321]/80 backdrop-blur-xl">
+        <div className={`relative p-3 sm:p-4 border-t transition-colors duration-300 ${
+          darkMode
+            ? "border-slate-800/50 bg-[#0d1321]/80 backdrop-blur-xl"
+            : "border-slate-200 bg-white/80 backdrop-blur-xl"
+        }`}>
           {/* Quick Follow-ups */}
           {messages.length > 0 && messages[messages.length - 1]?.followUps && (
             <div className="mb-2 sm:mb-3 flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
@@ -1001,10 +1048,16 @@ export default function Home() {
           )}
 
           {/* Input */}
-          <div className="flex items-center gap-2 sm:gap-3 bg-[#151c2c] rounded-xl sm:rounded-2xl border border-slate-700/50 focus-within:border-blue-500/50 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all shadow-lg">
+          <div className={`flex items-center gap-2 sm:gap-3 rounded-xl sm:rounded-2xl border transition-all shadow-lg ${
+            darkMode
+              ? "bg-[#151c2c] border-slate-700/50 focus-within:border-blue-500/50 focus-within:ring-2 focus-within:ring-blue-500/20"
+              : "bg-white border-slate-300 focus-within:border-blue-400/50 focus-within:ring-2 focus-within:ring-blue-400/20"
+          }`}>
             <input
               ref={inputRef}
-              className="flex-1 px-3 py-3 sm:px-5 sm:py-4 bg-transparent text-white placeholder-slate-500 focus:outline-none text-sm"
+              className={`flex-1 px-3 py-3 sm:px-5 sm:py-4 bg-transparent placeholder-slate-500 focus:outline-none text-sm transition-colors duration-300 ${
+                darkMode ? "text-white" : "text-slate-900 placeholder-slate-400"
+              }`}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
