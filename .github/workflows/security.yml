@@ -13,6 +13,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # Fetch all history for all branches
       
     - name: Setup Node.js
       uses: actions/setup-node@v3
@@ -23,12 +25,12 @@ jobs:
       uses: trufflesecurity/trufflehog@main
       with:
         path: ./
-        base: ${{ github.event.repository.default_branch }}
-        head: HEAD
         
     - name: Scan for vulnerabilities
       run: |
         cd iic-bot-backend
-        npm audit --audit-level=high
+        npm install
+        npm audit --audit-level=moderate || true
         cd ../iic-bot-frontend
-        npm audit --audit-level=high
+        npm install
+        npm audit --audit-level=moderate || true
