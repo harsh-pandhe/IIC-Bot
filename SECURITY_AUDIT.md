@@ -14,6 +14,42 @@
 - ✅ Passwords are hashed with bcryptjs (10 rounds) before storage
 - ✅ Outputs credentials to console for one-time setup (not stored in files)
 
+### Quick Start - Rotate Accounts:
+```bash
+# 1. Make sure .env is configured with MONGODB_URI
+cat iic-bot-backend/.env  # Check MONGODB_URI is set
+
+# 2. Run the rotation script
+cd iic-bot-backend
+npm run rotate-accounts
+
+# Example output:
+# 🔄 Starting account rotation...
+# ✅ Deleted X existing accounts
+# ✅ New accounts created successfully!
+# 
+# 🔐 NEW CREDENTIALS - SAVE THESE SECURELY!
+# ═══════════════════════════════════════════════════════
+# ADMIN ACCOUNT:
+#   Username: admin
+#   Password: aB3xY9kL2mN4pQr5sT6uV7wX8yZ1
+#   Email: admin@iicbot.com
+#   Role: admin
+# 
+# USER ACCOUNT:
+#   Username: user
+#   Password: cD7eF9gH1iJ3kL5mN7oP9qR1sT3
+#   Email: user@iicbot.com
+#   Role: user
+#
+# ⚠️  IMPORTANT: Save these credentials immediately!
+# ⚠️  They will not be displayed again.
+# ═══════════════════════════════════════════════════════
+
+# 3. Save credentials in password manager (1Password, Bitwarden, etc.)
+# DO NOT save in text files or git
+```
+
 ### 3. **Documentation Cleanup**
 - ❌ Deleted README.md (no user-facing docs in public repo)
 - ❌ Deleted CONTRIBUTING.md (no community contribution guidelines needed)
@@ -154,25 +190,61 @@
 
 ## 📋 Before Deployment Commands
 
+### Local Testing Setup:
 ```bash
 # 1. Install dependencies
+cd iic-bot-backend
 npm install
 
-# 2. Set up environment variables
+# 2. Create .env file from template
 cp .env.example .env
-# Edit .env with production values
 
-# 3. Rotate accounts (generate new credentials)
+# 3. Edit .env with YOUR values:
+# MONGODB_URI=mongodb://localhost:27017/iic-bot  (local testing)
+# OR
+# MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/iic-bot  (production)
+# 
+# Then add other required variables:
+# PINECONE_API_KEY=pcsk_xxxxx
+# GROQ_API_KEY=gsk_xxxxx
+# HUGGINGFACEHUB_API_TOKEN=hf_xxxxx
+# JWT_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+# REDIS_URL=redis://localhost:6379 (optional)
+
+# 4. Verify MongoDB connection works
+# Test that MONGODB_URI is set:
+echo $env:MONGODB_URI  # Should print your URI
+
+# 5. Rotate accounts (generate new credentials)
 npm run rotate-accounts
+# ⚠️  SAVE THE OUTPUT IMMEDIATELY - won't be shown again!
 
-# 4. Test locally
+# 6. Test locally
 npm run dev
 
-# 5. Deploy to Render/Vercel
-# (Set same env variables in dashboard)
+# 7. Deploy to Render/Vercel
+# (Set SAME env variables in deployment dashboard)
 
-# 6. Verify health endpoint
+# 8. Verify health endpoint
 curl https://your-app.com/health
+```
+
+### Production Deployment Setup:
+```bash
+# 1. In Render/Vercel Dashboard, set these environment variables:
+# MONGODB_URI=your_production_mongo_atlas_uri
+# PINECONE_API_KEY=your_key
+# GROQ_API_KEY=your_key
+# HUGGINGFACEHUB_API_TOKEN=your_token
+# JWT_SECRET=secure_random_string
+# REDIS_URL=your_redis_url (optional)
+
+# 2. After deployment, SSH into your server and run:
+npm run rotate-accounts
+# Save credentials in password manager immediately
+
+# 3. Verify deployment
+curl https://your-deployed-app.com/health
 ```
 
 ---
