@@ -653,16 +653,6 @@ export default function Home() {
     setLoading(false);
   }, [input, loading, user?.role]);
 
-  const copyToClipboard = async (text: string, id: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedId(id);
-      setTimeout(() => setCopiedId(null), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
-  };
-
   const canViewAnalytics = user?.role === "Administrator" || user?.permissions?.includes("analytics");
 
   return (
