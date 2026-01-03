@@ -703,13 +703,21 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
               </div>
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-[#0d1321] animate-pulse" />
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 transition-colors duration-300" style={{
+                borderColor: darkMode ? '#0d1321' : '#ffffff'
+              }} />
             </div>
             <div className="min-w-0">
-              <h1 className="text-base sm:text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent truncate">
+              <h1 className={`text-base sm:text-xl font-bold truncate transition-colors duration-300 ${
+                darkMode
+                  ? "bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent"
+                  : "text-slate-900"
+              }`}>
                 IIC Compliance Officer
               </h1>
-              <p className="text-xs text-slate-500 truncate">
+              <p className={`text-xs truncate transition-colors duration-300 ${
+                darkMode ? "text-slate-500" : "text-slate-600"
+              }`}>
                 {user ? (
                   <span className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-green-500" />
@@ -726,7 +734,11 @@ export default function Home() {
             {canViewAnalytics && (
               <button
                 onClick={fetchAnalytics}
-                className="p-2 sm:px-3 sm:py-2 text-xs bg-purple-500/10 text-purple-300 rounded-lg hover:bg-purple-500/20 border border-purple-500/20 transition-all flex items-center gap-1.5"
+                className={`p-2 sm:px-3 sm:py-2 text-xs rounded-lg hover:transition-all flex items-center gap-1.5 ${
+                  darkMode
+                    ? "bg-purple-500/10 text-purple-300 hover:bg-purple-500/20 border border-purple-500/20"
+                    : "bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-300"
+                }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -737,7 +749,11 @@ export default function Home() {
 
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className="p-2 sm:px-3 sm:py-2 text-xs bg-slate-700/50 text-slate-300 rounded-lg hover:bg-slate-600/50 border border-slate-600/50 transition-all flex items-center gap-1.5"
+              className={`p-2 sm:px-3 sm:py-2 text-xs rounded-lg border transition-all flex items-center gap-1.5 ${
+                darkMode
+                  ? "bg-slate-700/50 text-slate-300 hover:bg-slate-600/50 border-slate-600/50"
+                  : "bg-slate-200 text-slate-700 hover:bg-slate-300 border-slate-400"
+              }`}
               title="Toggle theme"
             >
               {darkMode ? (
@@ -755,7 +771,11 @@ export default function Home() {
             {messages.length > 0 && (
               <button
                 onClick={clearHistory}
-                className="p-2 sm:px-3 sm:py-2 text-xs bg-red-500/10 text-red-300 rounded-lg hover:bg-red-500/20 border border-red-500/20 transition-all flex items-center gap-1.5"
+                className={`p-2 sm:px-3 sm:py-2 text-xs rounded-lg hover:transition-all flex items-center gap-1.5 ${
+                  darkMode
+                    ? "bg-red-500/10 text-red-300 hover:bg-red-500/20 border border-red-500/20"
+                    : "bg-red-100 text-red-700 hover:bg-red-200 border border-red-300"
+                }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -767,14 +787,21 @@ export default function Home() {
             {user ? (
               <button
                 onClick={handleLogout}
-                className="px-2 sm:px-3 py-2 text-xs bg-slate-700/50 text-slate-300 rounded-lg hover:bg-slate-600/50 border border-slate-600/50 transition-all"
+                className={`px-2 sm:px-3 py-2 text-xs rounded-lg border transition-all ${
+                  darkMode
+                    ? "bg-slate-700/50 text-slate-300 hover:bg-slate-600/50 border-slate-600/50"
+                    : "bg-slate-200 text-slate-700 hover:bg-slate-300 border-slate-400"
+                }`}
               >
                 Logout
               </button>
             ) : (
               <button
                 onClick={() => setShowLogin(true)}
-                className="px-3 sm:px-4 py-2 text-xs bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-500 hover:to-purple-500 transition-all shadow-lg shadow-blue-500/25"
+                className={`px-3 sm:px-4 py-2 text-xs rounded-lg transition-all shadow-lg ${ darkMode
+                  ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-500 hover:to-purple-500 shadow-blue-500/25"
+                  : "bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 shadow-blue-400/25"
+                }`}
               >
                 Login
               </button>
@@ -1014,7 +1041,7 @@ export default function Home() {
                     <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" />
                     <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
                     <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                    <span className="text-sm text-slate-400 ml-2">Analyzing SOPs...</span>
+                    <span className={`text-sm ml-2 ${darkMode ? "text-slate-400" : "text-slate-600"}`}>Analyzing SOPs...</span>
                   </div>
                 </div>
               </div>
@@ -1038,7 +1065,11 @@ export default function Home() {
                   key={i}
                   onClick={() => sendMessage(q)}
                   disabled={loading}
-                  className="whitespace-nowrap bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700/50 text-xs text-slate-400 hover:text-slate-200 px-3 py-1.5 rounded-full transition-all disabled:opacity-50 flex items-center gap-1.5"
+                  className={`whitespace-nowrap border text-xs px-3 py-1.5 rounded-full transition-all disabled:opacity-50 flex items-center gap-1.5 ${
+                    darkMode
+                      ? "bg-slate-800/50 hover:bg-slate-700/50 border-slate-700/50 text-slate-400 hover:text-slate-200"
+                      : "bg-slate-200 hover:bg-slate-300 border-slate-300 text-slate-700 hover:text-slate-900"
+                  }`}
                 >
                   <span className="text-blue-400">→</span>
                   {q}
