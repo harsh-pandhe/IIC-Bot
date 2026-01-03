@@ -64,7 +64,7 @@ const formatSourceName = (source: string): string => {
     .trim() || source;
 };
 
-const formatMessage = (text: string) => {
+const formatMessage = (text: string, isDarkMode: boolean = true) => {
   const lines = text.split("\n");
 
   return lines.map((line, i) => {
@@ -73,13 +73,17 @@ const formatMessage = (text: string) => {
     if (numberedMatch) {
       return (
         <div key={i} className="flex gap-3 mb-3">
-          <span className="flex-shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 text-blue-400 text-xs flex items-center justify-center font-bold border border-blue-500/30">
+          <span className={`flex-shrink-0 w-7 h-7 rounded-full text-xs flex items-center justify-center font-bold border ${
+            isDarkMode
+              ? "bg-gradient-to-br from-blue-500/20 to-purple-500/20 text-blue-400 border-blue-500/30"
+              : "bg-blue-100 text-blue-600 border-blue-300"
+          }`}>
             {numberedMatch[1]}
           </span>
           <div className="flex-1">
-            <span className="font-semibold text-white">{numberedMatch[2]}</span>
+            <span className={`font-semibold ${isDarkMode ? "text-white" : "text-slate-900"}`}>{numberedMatch[2]}</span>
             {numberedMatch[3] && (
-              <span className="text-slate-300">: {numberedMatch[3]}</span>
+              <span className={isDarkMode ? "text-slate-300" : "text-slate-700"}>: {numberedMatch[3]}</span>
             )}
           </div>
         </div>
@@ -91,7 +95,7 @@ const formatMessage = (text: string) => {
       const bulletContent = line.trim().replace(/^[-•*]\s*/, "");
       const boldParts = bulletContent.split(/(\*\*.*?\*\*)/g).map((part, j) =>
         part.startsWith("**") && part.endsWith("**") ? (
-          <strong key={j} className="text-white font-semibold">
+          <strong key={j} className={`font-semibold ${isDarkMode ? "text-white" : "text-slate-900"}`}>
             {part.slice(2, -2)}
           </strong>
         ) : (
@@ -99,8 +103,8 @@ const formatMessage = (text: string) => {
         )
       );
       return (
-        <div key={i} className="ml-3 text-slate-300 text-sm mb-2 flex items-start gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 flex-shrink-0" />
+        <div key={i} className={`ml-3 text-sm mb-2 flex items-start gap-2 ${isDarkMode ? "text-slate-300" : "text-slate-700"}`}>
+          <span className={`w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 ${isDarkMode ? "bg-blue-400" : "bg-blue-600"}`} />
           <span>{boldParts}</span>
         </div>
       );
@@ -109,7 +113,11 @@ const formatMessage = (text: string) => {
     // Handle Responsible/Role lines
     if (line.trim().toLowerCase().startsWith("responsible:") || line.trim().toLowerCase().startsWith("role:")) {
       return (
-        <div key={i} className="ml-3 text-slate-400 text-sm mb-2 flex items-center gap-2 bg-slate-800/30 px-3 py-1.5 rounded-lg w-fit">
+        <div key={i} className={`ml-3 text-sm mb-2 flex items-center gap-2 px-3 py-1.5 rounded-lg w-fit ${
+          isDarkMode
+            ? "text-slate-400 bg-slate-800/30"
+            : "text-slate-700 bg-blue-50"
+        }`}>
           <span className="text-purple-400">👤</span>
           <span>{line.trim()}</span>
         </div>
@@ -119,7 +127,11 @@ const formatMessage = (text: string) => {
     // Handle warning/penalty lines
     if (line.includes("⚠️") || line.toLowerCase().includes("penalty")) {
       return (
-        <div key={i} className="bg-red-500/10 border border-red-500/20 px-4 py-2 rounded-lg mb-2 text-red-300">
+        <div key={i} className={`border px-4 py-2 rounded-lg mb-2 ${
+          isDarkMode
+            ? "bg-red-500/10 border-red-500/20 text-red-300"
+            : "bg-red-50 border-red-300 text-red-700"
+        }`}>
           {line}
         </div>
       );
@@ -128,7 +140,7 @@ const formatMessage = (text: string) => {
     // Parse bold text
     const boldParts = line.split(/(\*\*.*?\*\*)/g).map((part, j) =>
       part.startsWith("**") && part.endsWith("**") ? (
-        <strong key={j} className="text-white font-semibold">
+        <strong key={j} className={`font-semibold ${isDarkMode ? "text-white" : "text-slate-900"}`}>
           {part.slice(2, -2)}
         </strong>
       ) : (
@@ -137,7 +149,7 @@ const formatMessage = (text: string) => {
     );
 
     return line.trim() ? (
-      <p key={i} className="mb-2 leading-relaxed">
+      <p key={i} className={`mb-2 leading-relaxed ${isDarkMode ? "text-slate-200" : "text-slate-800"}`}>
         {boldParts}
       </p>
     ) : (
@@ -925,7 +937,7 @@ export default function Home() {
                   ) : (
                     <div>
                       <div className="px-3 py-3 sm:px-5 sm:py-4 text-sm leading-relaxed">
-                        {formatMessage(msg.content)}
+                        {formatMessage(msg.content, darkMode)}
                       </div>
 
                       {/* Sources */}
@@ -945,7 +957,11 @@ export default function Home() {
                             {msg.sources.map((s, i) => (
                               <span
                                 key={i}
-                                className="text-xs bg-blue-500/10 border border-blue-500/20 text-blue-300 px-2.5 py-1 rounded-lg"
+                                className={`text-xs px-2.5 py-1 rounded-lg border ${
+                                  darkMode
+                                    ? "bg-blue-500/10 border-blue-500/20 text-blue-300"
+                                    : "bg-blue-100 border-blue-300 text-blue-700"
+                                }`}
                               >
                                 {formatSourceName(s)}
                               </span>
@@ -955,14 +971,22 @@ export default function Home() {
                       )}
 
                       {/* Rating & Actions */}
-                      <div className="px-3 py-2.5 sm:px-5 sm:py-3 border-t border-slate-700/50 flex items-center justify-between">
+                      <div className={`px-3 py-2.5 sm:px-5 sm:py-3 border-t flex items-center justify-between transition-colors duration-300 ${
+                        darkMode
+                          ? "border-slate-700/50"
+                          : "border-slate-200"
+                      }`}>
                         <StarRating
                           rating={msg.rating}
                           onRate={(rating) => rateMessage(msg.id, rating)}
                         />
                         <button
                           onClick={() => copyToClipboard(msg.content, msg.id)}
-                          className="text-slate-400 hover:text-blue-400 transition-colors p-1.5 rounded-lg hover:bg-slate-700/50"
+                          className={`transition-colors p-1.5 rounded-lg ${
+                            darkMode
+                              ? "text-slate-400 hover:text-blue-400 hover:bg-slate-700/50"
+                              : "text-slate-600 hover:text-blue-600 hover:bg-blue-50"
+                          }`}
                           title="Copy response"
                         >
                           {copiedId === msg.id ? (
