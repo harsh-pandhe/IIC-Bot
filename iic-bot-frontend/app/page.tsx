@@ -397,7 +397,10 @@ export default function Home() {
   const [showLogin, setShowLogin] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [darkMode, setDarkMode] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Load saved data on mount
   useEffect(() => {
@@ -434,6 +437,48 @@ export default function Home() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingContent]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + K: Focus input
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+      // Ctrl/Cmd + L: Clear chat
+      if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+        e.preventDefault();
+        if (messages.length > 0 && confirm('Clear all messages?')) {
+          setMessages([]);
+          localStorage.removeItem('iic-chat-history');
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [messages]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyboard = (e: KeyboardEvent) => {
+      // Ctrl+K: Focus input
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+      // Ctrl+L: Clear chat
+      if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+        e.preventDefault();
+        if (confirm('Clear chat history?')) {
+          setMessages([]);
+          setInput('');
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyboard);
+    return () => window.removeEventListener('keydown', handleKeyboard);
+  }, []);
 
   const handleLogin = async (username: string, password: string) => {
     const res = await fetch(`${API_URL}/login`, {
@@ -496,6 +541,16 @@ export default function Home() {
     localStorage.removeItem("iic-chat-history");
   };
 
+  const copyToClipboard = async (text: string, id: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
   const sendMessage = useCallback(async (questionOverride?: string) => {
     const question = questionOverride || input;
     if (!question.trim() || loading) return;
@@ -529,7 +584,7 @@ export default function Home() {
     try {
       const response = await fetch(`${API_URL}/chat/stream`, {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem('auth_token') || ''}`
         },
@@ -598,6 +653,16 @@ export default function Home() {
     setLoading(false);
   }, [input, loading, user?.role]);
 
+  const copyToClipboard = async (text: string, id: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
   const canViewAnalytics = user?.role === "Administrator" || user?.permissions?.includes("analytics");
 
   return (
@@ -650,6 +715,23 @@ export default function Home() {
                 <span className="hidden sm:inline">Analytics</span>
               </button>
             )}
+
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="p-2 sm:px-3 sm:py-2 text-xs bg-slate-700/50 text-slate-300 rounded-lg hover:bg-slate-600/50 border border-slate-600/50 transition-all flex items-center gap-1.5"
+              title="Toggle theme"
+            >
+              {darkMode ? (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              )}
+              <span className="hidden sm:inline">{darkMode ? 'Light' : 'Dark'}</span>
+            </button>
 
             {messages.length > 0 && (
               <button
@@ -816,12 +898,27 @@ export default function Home() {
                         </div>
                       )}
 
-                      {/* Rating */}
+                      {/* Rating & Actions */}
                       <div className="px-3 py-2.5 sm:px-5 sm:py-3 border-t border-slate-700/50 flex items-center justify-between">
                         <StarRating
                           rating={msg.rating}
                           onRate={(rating) => rateMessage(msg.id, rating)}
                         />
+                        <button
+                          onClick={() => copyToClipboard(msg.content, msg.id)}
+                          className="text-slate-400 hover:text-blue-400 transition-colors p-1.5 rounded-lg hover:bg-slate-700/50"
+                          title="Copy response"
+                        >
+                          {copiedId === msg.id ? (
+                            <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          ) : (
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                          )}
+                        </button>
                       </div>
 
                       {/* Follow-ups */}
@@ -916,11 +1013,21 @@ export default function Home() {
           {/* Input */}
           <div className="flex items-center gap-2 sm:gap-3 bg-[#151c2c] rounded-xl sm:rounded-2xl border border-slate-700/50 focus-within:border-blue-500/50 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all shadow-lg">
             <input
+              ref={inputRef}
               className="flex-1 px-3 py-3 sm:px-5 sm:py-4 bg-transparent text-white placeholder-slate-500 focus:outline-none text-sm"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
-              placeholder={user ? "Ask about SOPs, rules, or responsibilities..." : "Please login to start chatting..."}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage();
+                }
+                if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+                  e.preventDefault();
+                  sendMessage();
+                }
+              }}
+              placeholder={user ? "Ask about SOPs, rules, or responsibilities... (⌘K to focus)" : "Please login to start chatting..."}
               disabled={loading || !user}
             />
             <button
