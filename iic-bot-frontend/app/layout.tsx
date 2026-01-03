@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -17,12 +17,13 @@ export const metadata: Metadata = {
   description: "AI-powered compliance assistant for Institution's Innovation Council. Get instant answers about SOPs, responsibilities, and rules.",
   keywords: ["IIC", "compliance", "SOP", "innovation council", "assistant"],
   authors: [{ name: "IIC Team" }],
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 5,
-    userScalable: true,
-  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
 };
 
 export default function RootLayout({

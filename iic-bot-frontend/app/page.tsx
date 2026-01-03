@@ -88,10 +88,20 @@ const formatMessage = (text: string) => {
 
     // Handle bullet points
     if (line.trim().startsWith("- ") || line.trim().startsWith("• ") || line.trim().startsWith("* ")) {
+      const bulletContent = line.trim().replace(/^[-•*]\s*/, "");
+      const boldParts = bulletContent.split(/(\*\*.*?\*\*)/g).map((part, j) =>
+        part.startsWith("**") && part.endsWith("**") ? (
+          <strong key={j} className="text-white font-semibold">
+            {part.slice(2, -2)}
+          </strong>
+        ) : (
+          part
+        )
+      );
       return (
         <div key={i} className="ml-3 text-slate-300 text-sm mb-2 flex items-start gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 flex-shrink-0" />
-          <span>{line.trim().replace(/^[-•*]\s*/, "")}</span>
+          <span>{boldParts}</span>
         </div>
       );
     }
@@ -435,6 +445,7 @@ export default function Home() {
     if (data.success) {
       setUser(data.user);
       localStorage.setItem("iic-user", JSON.stringify(data.user));
+      localStorage.setItem("auth_token", data.token);
       setShowLogin(false);
     } else {
       throw new Error("Invalid credentials");
@@ -444,11 +455,16 @@ export default function Home() {
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem("iic-user");
+    localStorage.removeItem("auth_token");
   };
 
   const fetchAnalytics = async () => {
     try {
-      const res = await fetch(`${API_URL}/analytics`);
+      const res = await fetch(`${API_URL}/analytics`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
+        }
+      });
       const data = await res.json();
       setAnalytics(data);
       setShowAnalytics(true);

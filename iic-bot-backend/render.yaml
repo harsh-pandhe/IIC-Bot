@@ -4,11 +4,15 @@ services:
     runtime: node
     region: oregon
     plan: free
-    buildCommand: npm install --legacy-peer-deps
-    startCommand: npm start
+    rootDir: iic-bot-backend
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
       - key: PINECONE_API_KEY
         sync: false
       - key: PINECONE_INDEX
@@ -17,5 +21,11 @@ services:
         sync: false
       - key: GROQ_API_KEY
         sync: false
-      - key: PORT
-        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false

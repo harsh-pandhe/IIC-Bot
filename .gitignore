@@ -1,0 +1,77 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Environment Variables - CRITICAL: Never commit these!
+.env
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+**/.env
+**/.env.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+pnpm-debug.log*
+
+# Testing
+coverage
+.nyc_output
+
+# Production
+build
+dist
+out
+.next
+
+# OS Files
+.DS_Store
+*.swp
+*.swo
+*~
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
+
+# Uploads
+uploads/
+documents/uploads/
+
+# Cache
+.cache
+.parcel-cache
+.eslintcache
+
+# Redis Dump
+dump.rdb
+
+# Secrets & Keys - Extra safety
+*.pem
+*.key
+*.cert
+credentials.json
+secrets.json
+
+# Database dumps
+*.sql
+*.sqlite
+*.db
