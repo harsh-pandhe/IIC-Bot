@@ -7,7 +7,6 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "ingest": "node ingest.js",
-    "rotate-accounts": "node scripts/rotate-accounts.js",
     "test": "echo \"No tests specified\" && exit 0"
   },
   "keywords": [
